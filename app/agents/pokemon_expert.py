@@ -11,14 +11,16 @@ from app.utils.pokemon_utils import analyze_pokemon_battle
 load_dotenv()
 
 
-def analyze_battle(pokemon1_data: Dict[str, Any], pokemon2_data: Dict[str, Any]) -> Tuple[str, str]:
+def analyze_battle(
+    pokemon1_data: Dict[str, Any], pokemon2_data: Dict[str, Any]
+) -> Tuple[str, str]:
     """
     Analyze a battle between two Pokémon and determine the likely winner
-    
+
     Args:
         pokemon1_data: Data for the first Pokémon
         pokemon2_data: Data for the second Pokémon
-        
+
     Returns:
         Tuple containing (winner name, reasoning)
     """
@@ -28,17 +30,17 @@ def analyze_battle(pokemon1_data: Dict[str, Any], pokemon2_data: Dict[str, Any])
 def explain_stats(pokemon_data: Dict[str, Any]) -> str:
     """
     Generate an explanation of a Pokémon's stats
-    
+
     Args:
         pokemon_data: Pokémon data
-        
+
     Returns:
         Explanation of the Pokémon's stats
     """
     stats = pokemon_data["base_stats"]
     pokemon_name = pokemon_data["name"].capitalize()
     types = ", ".join(t.capitalize() for t in pokemon_data["types"])
-    
+
     # Generate a user-friendly explanation using the LLM
     stats_prompt = PromptTemplate.from_template(
         """
@@ -58,40 +60,34 @@ def explain_stats(pokemon_data: Dict[str, Any]) -> str:
         Keep your explanation under 100 words.
         """
     )
-    
+
     if os.getenv("MODEL_PROVIDER") == "openai":
-        model = ChatOpenAI(
-            model="gpt-4o-mini",
-            temperature=0.1,
-            verbose=True
-        )
+        model = ChatOpenAI(model="gpt-4o-mini", temperature=0.1, verbose=True)
     else:
-        model = ChatGroq(
-            model="llama-3.1-8b-instant",
-            temperature=0.1,
-            verbose=True
-        )
+        model = ChatGroq(model="llama-3.1-8b-instant", temperature=0.1, verbose=True)
 
     # Query the model
     response = model.invoke(
-        [HumanMessage(content=stats_prompt.format(
-            name=pokemon_name,
-            types=types,
-            hp=stats["hp"],
-            attack=stats["attack"],
-            defense=stats["defense"],
-            special_attack=stats["special_attack"],
-            special_defense=stats["special_defense"],
-            speed=stats["speed"]
-        ))]
+        [
+            HumanMessage(
+                content=stats_prompt.format(
+                    name=pokemon_name,
+                    types=types,
+                    hp=stats["hp"],
+                    attack=stats["attack"],
+                    defense=stats["defense"],
+                    special_attack=stats["special_attack"],
+                    special_defense=stats["special_defense"],
+                    speed=stats["speed"],
+                )
+            )
+        ]
     )
-    
+
     return response.content
 
-EXPERT_TOOLS = [
-    analyze_battle,
-    explain_stats
-]
+
+EXPERT_TOOLS = [analyze_battle, explain_stats]
 
 EXPERT_PROMPT = """
 You are an elite Pokémon Expert Agent with deep analytical knowledge of competitive battling, statistical optimization, and strategic gameplay across all Pokémon generations. Your insights combine game mechanics understanding with practical battle experience, making you an invaluable resource for trainers seeking to master Pokémon combat and development.

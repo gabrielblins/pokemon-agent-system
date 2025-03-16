@@ -1,5 +1,4 @@
 from typing import Dict, Any, List
-from langchain.tools import tool
 from langchain_core.prompts import PromptTemplate
 from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI
@@ -16,10 +15,10 @@ load_dotenv()
 def fetch_pokemon_info(pokemon_name: str) -> Dict[str, Any]:
     """
     Fetch information about a specific Pokémon from the PokéAPI
-    
+
     Args:
         pokemon_name: Name of the Pokémon (case-insensitive)
-        
+
     Returns:
         Dictionary containing Pokémon data
     """
@@ -28,13 +27,14 @@ def fetch_pokemon_info(pokemon_name: str) -> Dict[str, Any]:
     except Exception as e:
         return {"error": str(e)}
 
+
 def extract_pokemon_names(text: str) -> List[str]:
     """
     Extract Pokémon names from text
-    
+
     Args:
         text: Text containing Pokémon names
-        
+
     Returns:
         List of Pokémon names
     """
@@ -50,38 +50,24 @@ def extract_pokemon_names(text: str) -> List[str]:
         Pokémon names (lowercase, comma-separated):
         """
     )
-    
+
     if os.getenv("MODEL_PROVIDER") == "openai":
-        model = ChatOpenAI(
-            model="gpt-4o-mini",
-            temperature=0.1,
-            verbose=True
-        )
+        model = ChatOpenAI(model="gpt-4o-mini", temperature=0.1, verbose=True)
     else:
-        model = ChatGroq(
-            model="llama-3.1-8b-instant",
-            temperature=0.1,
-            verbose=True
-        )
-    
+        model = ChatGroq(model="llama-3.1-8b-instant", temperature=0.1, verbose=True)
+
     # Query the model
-    response = model.invoke(
-        [HumanMessage(content=extract_prompt.format(text=text))]
-    )
-    
+    response = model.invoke([HumanMessage(content=extract_prompt.format(text=text))])
+
     # Parse the comma-separated list
     pokemon_names = [
-        name.strip().lower() 
-        for name in response.content.split(",")
-        if name.strip()
+        name.strip().lower() for name in response.content.split(",") if name.strip()
     ]
-    
+
     return pokemon_names
 
-RESEARCHER_TOOLS = [
-    fetch_pokemon_info,
-    extract_pokemon_names
-]
+
+RESEARCHER_TOOLS = [fetch_pokemon_info, extract_pokemon_names]
 
 RESEARCHER_PROMPT = """
 You are an advanced Pokémon researcher agent with comprehensive knowledge of the Pokémon universe. Your expertise spans across all generations of Pokémon, their abilities, stats, evolutions, types, and battle mechanics.

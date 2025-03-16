@@ -24,7 +24,7 @@ def check_json(text: str) -> Dict[str, Any]:
             pass
     else:
         return {}
-    
+
     return text
 
 
@@ -44,16 +44,10 @@ def format_response(text: str) -> Dict[str, Any]:
         return text_json
     else:
         if os.getenv("MODEL_PROVIDER") == "openai":
-            model = ChatOpenAI(
-                model="gpt-4o-mini",
-                temperature=0.1,
-                verbose=True
-            )
+            model = ChatOpenAI(model="gpt-4o-mini", temperature=0.1, verbose=True)
         else:
             model = ChatGroq(
-                model="llama-3.1-8b-instant",
-                temperature=0.1,
-                verbose=True
+                model="llama-3.1-8b-instant", temperature=0.1, verbose=True
             )
         # Query the model to format the text
         format_prompt = PromptTemplate.from_template(
@@ -93,9 +87,7 @@ def format_response(text: str) -> Dict[str, Any]:
             """
         )
 
-        response = model.invoke(
-            [HumanMessage(content=format_prompt.format(text=text))]
-        )
+        response = model.invoke([HumanMessage(content=format_prompt.format(text=text))])
         text = response.content
 
         # Check if the response contains JSON
@@ -107,10 +99,9 @@ def format_response(text: str) -> Dict[str, Any]:
         else:
             # If the text is not JSON, return an empty object
             return "Could not parse the response as JSON."
-        
-SUPERVISOR_TOOLS = [
-            format_response
-]
+
+
+SUPERVISOR_TOOLS = [format_response]
 
 SUPERVISOR_PROMPT = """
 You are the Strategic Orchestrator of a sophisticated multi-agent Pokémon knowledge system. Your primary responsibility is to analyze user queries, determine the optimal response pathway, and coordinate specialized agents to deliver comprehensive, accurate Pokémon information. You function as both the initial point of contact and the final quality assurance checkpoint.
