@@ -1,0 +1,27 @@
+pokemon-multi-agent/
+├── app/
+│   ├── __init__.py
+│   ├── main.py                  # FastAPI application
+│   ├── agents/
+│   │   ├── __init__.py
+│   │   ├── supervisor.py        # Supervisor Agent
+│   │   ├── researcher.py        # Researcher Agent
+│   │   └── pokemon_expert.py    # Pokémon Expert Agent
+│   ├── graph/
+│   │   ├── __init__.py
+│   │   └── agent_graph.py       # LangGraph configuration
+│   ├── models/
+│   │   ├── __init__.py
+│   │   └── schemas.py           # Pydantic models for API
+│   └── utils/
+│       ├── __init__.py
+│       └── pokemon_utils.py     # Utility functions for Pokémon data
+├── tests/
+│   ├── __init__.py
+│   ├── test_main.py             # API tests
+│   └── test_agents.py           # Agent tests
+├── Dockerfile
+├── docker-compose.yml
+├── Makefile
+├── requirements.txt
+└── README.md
