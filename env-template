@@ -1,0 +1,28 @@
+# API Keys
+# Required for the LLM provider (OpenAI by default)
+OPENAI_API_KEY=your_openai_api_key
+
+# Optional: If you want to use a different LLM provider like Groq
+# GROQ_API_KEY=your_groq_api_key
+
+# Application Settings
+# Optional: Configure the model name (default: o3-mini)
+MODEL_NAME=o3-mini
+MODEL_PROVIDER=openai
+
+# Server settings
+# Optional: Port for the API (default: 8000)
+# PORT=8000
+
+# Optional: Host for the API (default: 0.0.0.0)
+# HOST=0.0.0.0
+
+# Optional: Debug mode (default: false)
+# DEBUG=True
+
+# Langsmith Settings (Optional)
+# Langsmith settings
+# LANGSMITH_TRACING=true
+# LANGSMITH_ENDPOINT="https://api.smith.langchain.com"
+# LANGSMITH_API_KEY="your_langsmith_api_key"
+# LANGSMITH_PROJECT="your_langsmith_project"
