@@ -39,3 +39,15 @@ class BattleResponse(BaseModel):
 
     winner: str = Field(..., description="Name of the winning Pokémon")
     reasoning: str = Field(..., description="Reasoning behind the battle outcome")
+
+
+class BattleVisualizationResponse(BaseModel):
+    """Response model for battle visualization endpoint"""
+
+    visualization_path: str = Field(..., description="Path to the visualization file")
+    description: str = Field(..., description="Description of the visualization")
+    pokemon1: str = Field(..., description="Name of the first Pokémon")
+    pokemon2: str = Field(..., description="Name of the second Pokémon")
+    winner: str = Field(..., description="Name of the winning Pokémon")
+    battle_highlights: Optional[str] = Field(None, description="Brief highlights of key moments in the battle")
+    shiny_used: Optional[bool] = Field(False, description="Whether shiny Pokémon sprites were used")

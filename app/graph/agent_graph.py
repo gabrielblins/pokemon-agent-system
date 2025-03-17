@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from app.agents.supervisor import SUPERVISOR_PROMPT, SUPERVISOR_TOOLS
 from app.agents.researcher import RESEARCHER_PROMPT, RESEARCHER_TOOLS
 from app.agents.pokemon_expert import EXPERT_PROMPT, EXPERT_TOOLS
+from app.agents.visualizer import VISUALIZER_PROMPT, VISUALIZER_TOOLS
 from langchain.globals import set_verbose, set_debug
 from langgraph.prebuilt import create_react_agent
 from langgraph_supervisor import create_supervisor
@@ -51,9 +52,12 @@ def create_agent_graph(
     expert = create_react_agent(
         model=llm, tools=EXPERT_TOOLS, name="expert", prompt=EXPERT_PROMPT
     )
+    visualizer = create_react_agent(
+        model=llm, tools=VISUALIZER_TOOLS, name="visualizer", prompt=VISUALIZER_PROMPT
+    )
 
     workflow = create_supervisor(
-        agents=[researcher, expert],
+        agents=[researcher, expert, visualizer],
         model=llm,
         prompt=SUPERVISOR_PROMPT,
         tools=SUPERVISOR_TOOLS,

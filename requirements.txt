@@ -15,6 +15,11 @@ langgraph-supervisor>=0.0.9
 # For API Calls
 requests>=2.31.0
 
+# Visualization dependencies
+pillow>=9.0.0
+imageio>=2.25.1
+numpy>=1.22.0
+
 # Testing
 pytest>=7.4.0
 pytest-asyncio>=0.21.1
