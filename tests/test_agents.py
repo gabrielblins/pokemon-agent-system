@@ -3,7 +3,7 @@ Basic tests for the agent components.
 """
 
 from unittest.mock import patch, MagicMock
-from app.agents.researcher import fetch_pokemon_info, extract_pokemon_names
+from app.agents.researcher import fetch_pokemon_info
 from app.agents.pokemon_expert import analyze_battle
 from app.agents.supervisor import format_response, check_json
 
@@ -17,22 +17,6 @@ def test_fetch_pokemon_info(mock_fetch_pokemon_data, mock_pokemon_data):
     # Test with an invalid name
     result = fetch_pokemon_info("notapokemon")
     assert "error" in result
-
-
-@patch("langchain_openai.ChatOpenAI")
-def test_extract_pokemon_names(mock_chat_model):
-    """Test extracting Pokémon names from text."""
-    # Set up the mock response
-    mock_instance = mock_chat_model.return_value
-    mock_message = MagicMock()
-    mock_message.content = "pikachu, charizard"
-    mock_instance.invoke.return_value = mock_message
-
-    result = extract_pokemon_names(
-        "Who would win in a battle between Pikachu and Charizard?"
-    )
-
-    assert set(result) == {"pikachu", "charizard"}
 
 
 @patch("app.utils.pokemon_utils.analyze_pokemon_battle")

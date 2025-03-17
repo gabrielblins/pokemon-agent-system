@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokémon Battle Simulator</title>
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        
+        :root {
+            --pokemon-red: #ff3e3e;
+            --pokemon-blue: #3e6aff;
+            --pokemon-yellow: #ffd13e;
+            --pokemon-dark: #263238;
+            --pokemon-light: #f8f9fa;
+            --pokemon-gray: #e0e0e0;
+            --pokemon-shadow: rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--pokemon-light);
+            background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png');
+            background-size: 100px;
+            background-repeat: repeat;
+            background-attachment: fixed;
+            color: var(--pokemon-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+        
+        /* Add overlay to make the background pattern subtle */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(248, 249, 250, 0.92);
+            z-index: -1;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            color: var(--pokemon-dark);
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px var(--pokemon-shadow);
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            color: var(--pokemon-dark);
+            opacity: 0.8;
+        }
+        
+        .pokeball-icon {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px var(--pokemon-shadow);
+            width: 100%;
+            max-width: 900px;
+            padding: 30px;
+            margin-bottom: 30px;
+            animation: slideUp 0.5s ease-in-out;
+        }
+        
+        .battle-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .battle-form {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .pokemon-input {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .pokemon-input label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--pokemon-dark);
+        }
+        
+        .pokemon-input input {
+            width: 100%;
+            padding: 12px 15px 12px 40px;
+            border: 2px solid var(--pokemon-gray);
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .pokemon-input input:focus {
+            border-color: var(--pokemon-blue);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(62, 106, 255, 0.2);
+        }
+        
+        .pokemon-input i {
+            position: absolute;
+            left: 15px;
+            top: 42px;
+            color: #aaa;
+        }
+        
+        .options {
+            grid-column: span 2;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .options {
+                grid-column: span 1;
+            }
+        }
+        
+        .option-toggle {
+            display: flex;
+            align-items: center;
+        }
+        
+        .toggle {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            margin-right: 10px;
+        }
+        
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--pokemon-gray);
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--pokemon-blue);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+        
+        .option-toggle label {
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .battle-btn {
+            grid-column: span 2;
+            background: linear-gradient(135deg, var(--pokemon-red), #ff6b6b);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(255, 62, 62, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .battle-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+        
+        .battle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(255, 62, 62, 0.4);
+        }
+        
+        .battle-btn:hover::before {
+            left: 100%;
+        }
+        
+        @media (max-width: 768px) {
+            .battle-btn {
+                grid-column: span 1;
+            }
+        }
+        
+        .battle-btn:active {
+            transform: translateY(1px);
+        }
+        
+        .battle-btn i {
+            margin-right: 10px;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 30px 0;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .pokeball-loader {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 15px;
+            animation: rotate 1.5s linear infinite;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+        }
+        
+        .loading p {
+            color: var(--pokemon-dark);
+            font-weight: 500;
+            margin-top: 10px;
+        }
+        
+        .error {
+            display: none;
+            background-color: rgba(255, 62, 62, 0.1);
+            border-left: 4px solid var(--pokemon-red);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: var(--pokemon-red);
+            font-weight: 500;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .error i {
+            margin-right: 10px;
+        }
+        
+        .battle-result {
+            display: none;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        
+        .battle-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .battle-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: var(--pokemon-dark);
+        }
+        
+        .battle-header p {
+            color: var(--pokemon-dark);
+            opacity: 0.8;
+        }
+        
+        .battle-animation {
+            position: relative;
+            width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px var(--pokemon-shadow);
+            margin-bottom: 30px;
+        }
+        
+        .battle-animation img {
+            width: 100%;
+            display: block;
+        }
+        
+        /* VS animation */
+        .vs-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            position: relative;
+            height: 60px;
+        }
+        
+        .vs-text {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--pokemon-red);
+            text-shadow: 2px 2px 0 var(--pokemon-dark);
+            position: relative;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .vs-line {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--pokemon-dark), transparent);
+            width: 100%;
+            position: absolute;
+            top: 50%;
+            z-index: -1;
+        }
+        
+        /* Pokemon card styling */
+        .pokemon-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .pokemon-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .pokemon-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 15px var(--pokemon-shadow);
+            transition: all 0.3s ease;
+            border-top: 4px solid var(--pokemon-blue);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .pokemon-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 60px;
+            height: 60px;
+            background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png');
+            background-size: 30px;
+            background-repeat: no-repeat;
+            background-position: right bottom;
+            opacity: 0.1;
+        }
+        
+        .pokemon-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px var(--pokemon-shadow);
+        }
+        
+        .pokemon-card.winner {
+            border-top: 4px solid var(--pokemon-yellow);
+        }
+        
+        .pokemon-card h4 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: var(--pokemon-dark);
+            display: flex;
+            align-items: center;
+        }
+        
+        .pokemon-card.winner h4::after {
+            content: '👑';
+            margin-left: 8px;
+        }
+        
+        .battle-details {
+            background-color: rgba(38, 50, 56, 0.03);
+            border-radius: 16px;
+            padding: 25px;
+        }
+        
+        .battle-info {
+            margin-bottom: 20px;
+        }
+        
+        .battle-info h3 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: var(--pokemon-dark);
+            display: flex;
+            align-items: center;
+        }
+        
+        .battle-info h3 i {
+            color: var(--pokemon-yellow);
+            margin-right: 10px;
+        }
+        
+        .battle-info p {
+            line-height: 1.6;
+            margin-bottom: 10px;
+            font-size: 1.05rem;
+        }
+        
+        .battle-info strong {
+            color: var(--pokemon-dark);
+        }
+        
+        .battle-highlights {
+            background-color: rgba(255, 209, 62, 0.1);
+            border-left: 4px solid var(--pokemon-yellow);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .battle-highlights h4 {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            color: var(--pokemon-dark);
+        }
+        
+        .battle-highlights p {
+            line-height: 1.6;
+        }
+        
+        .new-battle-btn {
+            background: linear-gradient(135deg, var(--pokemon-blue), #6b8eff);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+            box-shadow: 0 4px 10px rgba(62, 106, 255, 0.3);
+        }
+        
+        .new-battle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(62, 106, 255, 0.4);
+        }
+        
+        .new-battle-btn i {
+            margin-right: 10px;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: auto;
+            padding: 20px 0;
+            color: var(--pokemon-dark);
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Type badges */
+        .type-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        .type-normal { background-color: #A8A878; }
+        .type-fire { background-color: #F08030; }
+        .type-water { background-color: #6890F0; }
+        .type-grass { background-color: #78C850; }
+        .type-electric { background-color: #F8D030; }
+        .type-ice { background-color: #98D8D8; }
+        .type-fighting { background-color: #C03028; }
+        .type-poison { background-color: #A040A0; }
+        .type-ground { background-color: #E0C068; }
+        .type-flying { background-color: #A890F0; }
+        .type-psychic { background-color: #F85888; }
+        .type-bug { background-color: #A8B820; }
+        .type-rock { background-color: #B8A038; }
+        .type-ghost { background-color: #705898; }
+        .type-dragon { background-color: #7038F8; }
+        .type-dark { background-color: #705848; }
+        .type-steel { background-color: #B8B8D0; }
+        .type-fairy { background-color: #EE99AC; }
+        
+        /* Add Pokemon type display to battle results */
+        .pokemon-types {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin: 5px 0 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/2052px-Pok%C3%A9_Ball_icon.svg.png" alt="Pokeball" class="pokeball-icon">
+            Pokémon Battle Simulator
+        </h1>
+        <p>Choose two Pokémon and watch them battle in an epic showdown!</p>
+    </div>
+    
+    <div class="container">
+        <form class="battle-form" id="battle-form">
+            <div class="pokemon-input">
+                <label for="pokemon1">First Pokémon</label>
+                <i class="fas fa-search"></i>
+                <input type="text" id="pokemon1" placeholder="Enter Pokémon name (e.g. Pikachu)" value="pikachu">
+            </div>
+            
+            <div class="pokemon-input">
+                <label for="pokemon2">Second Pokémon</label>
+                <i class="fas fa-search"></i>
+                <input type="text" id="pokemon2" placeholder="Enter Pokémon name (e.g. Charizard)" value="charizard">
+            </div>
+            
+            <div class="options">
+                <div class="option-toggle">
+                    <label class="toggle">
+                        <input type="checkbox" id="use-shiny">
+                        <span class="slider"></span>
+                    </label>
+                    <label for="use-shiny">Use Shiny Sprites</label>
+                </div>
+                
+                <div class="option-toggle">
+                    <label class="toggle">
+                        <input type="checkbox" id="use-mock" checked>
+                        <span class="slider"></span>
+                    </label>
+                    <label for="use-mock">Use Mock API (Faster)</label>
+                </div>
+            </div>
+            
+            <button type="submit" class="battle-btn" id="generate-btn">
+                <i class="fas fa-bolt"></i> Start Battle
+            </button>
+        </form>
+        
+        <div class="loading" id="loading">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/2052px-Pok%C3%A9_Ball_icon.svg.png" alt="Loading..." class="pokeball-loader">
+            <p>Generating battle visualization...</p>
+            <p>This may take a few seconds</p>
+        </div>
+        
+        <div class="error" id="error-message">
+            <i class="fas fa-exclamation-circle"></i>
+            <span id="error-text"></span>
+        </div>
+    </div>
+    
+    <div class="container battle-result" id="result">
+        <div class="battle-header">
+            <h2>Battle Results</h2>
+            <p>Watch the epic battle unfold!</p>
+        </div>
+        
+        <div class="battle-animation">
+            <img id="battle-gif" src="" alt="Battle Animation">
+        </div>
+        
+        <div class="battle-details">
+            <div class="battle-info">
+                <h3><i class="fas fa-trophy"></i> Battle Outcome</h3>
+                
+                <div class="vs-container">
+                    <div class="vs-line"></div>
+                    <div class="vs-text">VS</div>
+                </div>
+                
+                <div class="pokemon-cards">
+                    <div id="pokemon1-card" class="pokemon-card">
+                        <h4 id="pokemon1-name"></h4>
+                        <div id="pokemon1-types" class="pokemon-types"></div>
+                    </div>
+                    
+                    <div id="pokemon2-card" class="pokemon-card">
+                        <h4 id="pokemon2-name"></h4>
+                        <div id="pokemon2-types" class="pokemon-types"></div>
+                    </div>
+                </div>
+                
+                <p><strong>Winner:</strong> <span id="winner"></span></p>
+                <p><strong>Using Shiny Sprites:</strong> <span id="shiny-status"></span></p>
+                
+                <div class="battle-highlights">
+                    <h4>Battle Highlights</h4>
+                    <p id="highlights"></p>
+                </div>
+            </div>
+            
+            <button class="new-battle-btn" id="new-battle-btn">
+                <i class="fas fa-redo"></i> New Battle
+            </button>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>Pokémon Battle Simulator &copy; 2025 | By: <a href="https://github.com/gabrielblins">Gabriel Lins</a> | Powered by <a href="https://pokeapi.co/">PokéAPI</a> & <a href="https://openai.com/">o3-mini</a> | <a href="https://github.com/gabrielblins/pokemon-agent-system">GitHub Repo</a></p>
+    </div>
+
+    <script>
+        // Function to create type badges
+        function createTypeBadge(type) {
+            const badge = document.createElement('span');
+            badge.className = `type-badge type-${type.toLowerCase()}`;
+            badge.textContent = type.charAt(0).toUpperCase() + type.slice(1);
+            return badge;
+        }
+        
+        document.getElementById('battle-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const pokemon1 = document.getElementById('pokemon1').value.trim().toLowerCase();
+            const pokemon2 = document.getElementById('pokemon2').value.trim().toLowerCase();
+            const useShiny = document.getElementById('use-shiny').checked;
+            const useMock = document.getElementById('use-mock').checked;
+            
+            if (!pokemon1 || !pokemon2) {
+                document.getElementById('error-text').textContent = 'Please enter both Pokémon names';
+                document.getElementById('error-message').style.display = 'block';
+                return;
+            }
+            
+            document.getElementById('error-message').style.display = 'none';
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('generate-btn').disabled = true;
+            document.getElementById('loading').style.display = 'block';
+            
+            try {
+                // Determine which endpoint to use
+                const endpoint = useMock ? 
+                    `/battle/visualize/mock?pokemon1=${pokemon1}&pokemon2=${pokemon2}&use_shiny=${useShiny}` : 
+                    `/battle/visualize?pokemon1=${pokemon1}&pokemon2=${pokemon2}&use_shiny=${useShiny}`;
+                
+                const response = await fetch(endpoint);
+                
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status} ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                // Extract the filename from the path
+                const pathParts = data.visualization_path.split('/');
+                const filename = pathParts[pathParts.length - 1];
+                
+                // Set the image source to the view endpoint
+                document.getElementById('battle-gif').src = `/battle/visualize/view/${filename}`;
+                
+                // Update battle info
+                const [pokemon1Name, pokemon2Name] = data.matchup ? data.matchup.split(' vs ') : [data.pokemon1, data.pokemon2];
+                document.getElementById('pokemon1-name').textContent = pokemon1Name;
+                document.getElementById('pokemon2-name').textContent = pokemon2Name;
+                document.getElementById('winner').textContent = data.winner;
+                document.getElementById('shiny-status').textContent = data.shiny_used ? 'Yes' : 'No';
+                document.getElementById('highlights').textContent = data.battle_highlights || 'No highlights available';
+                
+                // Highlight the winner
+                const pokemon1Card = document.getElementById('pokemon1-card');
+                const pokemon2Card = document.getElementById('pokemon2-card');
+                
+                // Reset winner classes
+                pokemon1Card.classList.remove('winner');
+                pokemon2Card.classList.remove('winner');
+                
+                // Add winner class to the appropriate card
+                if (data.winner.toLowerCase() === pokemon1Name.toLowerCase()) {
+                    pokemon1Card.classList.add('winner');
+                } else if (data.winner.toLowerCase() === pokemon2Name.toLowerCase()) {
+                    pokemon2Card.classList.add('winner');
+                }
+                
+                // Add Pokemon types if available
+                const pokemon1Types = document.getElementById('pokemon1-types');
+                const pokemon2Types = document.getElementById('pokemon2-types');
+                
+                // Clear previous types
+                pokemon1Types.innerHTML = '';
+                pokemon2Types.innerHTML = '';
+                
+                // Try to extract types from battle highlights
+                try {
+                    const highlightsText = data.battle_highlights || '';
+                    
+                    // Common Pokemon types to look for
+                    const pokemonTypes = [
+                        'normal', 'fire', 'water', 'grass', 'electric', 'ice', 
+                        'fighting', 'poison', 'ground', 'flying', 'psychic', 
+                        'bug', 'rock', 'ghost', 'dragon', 'dark', 'steel', 'fairy'
+                    ];
+                    
+                    // Look for types in the battle highlights
+                    const typeMatches = [];
+                    pokemonTypes.forEach(type => {
+                        const typeRegex = new RegExp(`${type}\\b`, 'i');
+                        if (typeRegex.test(highlightsText)) {
+                            typeMatches.push(type);
+                        }
+                    });
+                    
+                    // If we found types, distribute them between the two Pokemon
+                    if (typeMatches.length > 0) {
+                        // For simplicity, assign first half to pokemon1 and second half to pokemon2
+                        const midpoint = Math.ceil(typeMatches.length / 2);
+                        
+                        // Add types to pokemon1
+                        for (let i = 0; i < midpoint && i < typeMatches.length; i++) {
+                            pokemon1Types.appendChild(createTypeBadge(typeMatches[i]));
+                        }
+                        
+                        // Add types to pokemon2
+                        for (let i = midpoint; i < typeMatches.length; i++) {
+                            pokemon2Types.appendChild(createTypeBadge(typeMatches[i]));
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error processing Pokemon types:", error);
+                }
+                
+                // Show the result
+                document.getElementById('result').style.display = 'block';
+                
+                // Scroll to the result
+                document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+            } catch (error) {
+                document.getElementById('error-text').textContent = error.message || 'An error occurred while generating the battle visualization';
+                document.getElementById('error-message').style.display = 'block';
+            } finally {
+                document.getElementById('generate-btn').disabled = false;
+                document.getElementById('loading').style.display = 'none';
+            }
+        });
+        
+        // New battle button
+        document.getElementById('new-battle-btn').addEventListener('click', function() {
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('battle-form').scrollIntoView({ behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html> 
