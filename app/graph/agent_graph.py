@@ -84,7 +84,8 @@ def process_question(question: str) -> Dict[str, Any]:
     graph = create_agent_graph(model_provider=provider, model_name=model_name)
 
     initial_state = {"messages": [("user", question)]}
-
+    with open("graph.mermaid", "w") as f:
+        f.write(graph.get_graph().draw_mermaid())
     state = graph.invoke(initial_state)
 
     try:

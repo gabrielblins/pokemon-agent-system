@@ -165,7 +165,9 @@ async def visualize_battle(pokemon1: str, pokemon2: str, use_shiny: bool = False
             pokemon2=pokemon2.capitalize(),
             winner=visualization_response.get("winner", "Unknown").capitalize(),
             battle_highlights=visualization_response.get("battle_highlights"),
-            shiny_used=use_shiny or visualization_response.get("shiny_used", False)
+            shiny_used=use_shiny or visualization_response.get("shiny_used", False),
+            pokemon1_types=visualization_response.get("pokemon1_types", None),
+            pokemon2_types=visualization_response.get("pokemon2_types", None)
         )
 
     except Exception as e:
@@ -282,7 +284,9 @@ async def mock_battle_visualization(pokemon1: str = "pikachu", pokemon2: str = "
             pokemon2=pokemon2.capitalize(),
             winner=winner.capitalize(),
             battle_highlights=highlights,
-            shiny_used=use_shiny
+            shiny_used=use_shiny,
+            pokemon1_types=pokemon1_data.get("types", None),
+            pokemon2_types=pokemon2_data.get("types", None)
         )
         
     except Exception as e:

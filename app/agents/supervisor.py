@@ -354,7 +354,9 @@ Answer with a JSON object containing:
     "pokemon2": "Name of the second Pokémon",
     "winner": "Name of the winning Pokémon",
     "battle_highlights": "Brief highlights of key moments in the battle, and the reasoning for the battle outcome",
-    "shiny_used": "Whether shiny Pokémon sprites were used"
+    "shiny_used": "Whether shiny Pokémon sprites were used",
+    "pokemon1_types": "List of types for the first Pokémon (from Researcher data)",
+    "pokemon2_types": "List of types for the second Pokémon (from Researcher data)"
 }
 ```
 

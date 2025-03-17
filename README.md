@@ -2,6 +2,10 @@
 
 A multi-agent system built with LangGraph/LangChain and FastAPI for answering questions about Pokémon, retrieving Pokémon data, simulating Pokémon battles, and generating battle visualizations.
 
+# Try it out!
+
+The system is deployed to Google Cloud Run and can be accessed at https://pokemon-agent-system-179780044751.us-central1.run.app/battle-tester
+
 ## System Architecture
 
 The system consists of four specialized agents:
@@ -92,6 +96,12 @@ A web-based interface for testing battle visualizations:
 ```
 GET /battle-tester
 ```
+
+![Battle Tester](imgs/battle-test1.png)
+
+![Battle Visualization](imgs/battle_1742208919.gif)
+
+![Battle Tester Results](imgs/battle-test2.png)
 
 ## Setup and Installation
 
@@ -259,26 +269,37 @@ pokemon-multi-agent/
 ```
 
 ## Agent Graph
+
 ```mermaid
 %%{init: {'flowchart': {'curve': 'linear'}}}%%
-graph TD;
-	__start__([<p>__start__</p>]):::first
-	supervisor(supervisor)
-	researcher(researcher)
-	expert(expert)
-	visualizer(visualizer)
-	__end__([<p>__end__</p>]):::last
-	__start__ --> supervisor;
-	expert --> supervisor;
-	researcher --> supervisor;
-	visualizer --> supervisor;
-	supervisor -.-> expert;
-	supervisor -.-> researcher;
-	supervisor -.-> visualizer;
-	supervisor -.-> __end__;
-	classDef default fill:#f2f0ff,line-height:1.2
-	classDef first fill-opacity:0
-	classDef last fill:#bfb6fc
+graph TD
+    __start__([__start__]):::first
+    supervisor(supervisor):::trainer
+    researcher(researcher):::professor
+    expert(expert):::elite
+    visualizer(visualizer):::artist
+    __end__([__end__]):::last
+    
+    __start__ --> supervisor
+    expert --> supervisor
+    researcher --> supervisor
+    visualizer --> supervisor
+    
+    supervisor -.-> visualizer
+    supervisor -.-> researcher
+    supervisor -.-> expert
+    supervisor -.-> __end__
+    
+    %% Pokémon-themed styling
+    classDef default color:#ffffff,stroke-width:2
+    classDef first fill:#1a1a2e,stroke:#6890f0,stroke-width:2,stroke-dasharray:5 5,color:#ffffff
+    classDef last fill:#3d2c71,stroke:#ffc7c5,stroke-width:2,color:#ffffff
+    
+    %% Agent-specific styling based on Pokémon types/roles
+    classDef trainer fill:#ee6b2f,stroke:#cc0000,color:#ffffff %% Fire-type/Trainer colors
+    classDef professor fill:#3dc7ef,stroke:#2e80cc,color:#ffffff %% Water-type/Professor colors
+    classDef elite fill:#f366b9,stroke:#9b6470,color:#ffffff %% Psychic-type/Elite colors
+    classDef artist fill:#7AC74C,stroke:#4a9421,color:#ffffff %% Grass-type/Artist colors
 ```
 
 ## Battle Visualization
@@ -324,6 +345,42 @@ Potential new agent types:
 - Item Expert: Advises on the best items for specific Pokémon
 - Meta Analyst: Analyzes current competitive Pokémon meta trends
 - Training Advisor: Provides EV/IV training recommendations
+
+## LangSmith Tracing
+
+The system supports [LangSmith](https://smith.langchain.com/) tracing for monitoring, debugging, and optimizing the LLM application workflow. LangSmith provides visibility into:
+
+- Agent execution paths
+- Tool usage and performance
+- LLM prompt/response pairs
+- Execution times and token usage
+
+### Setting up LangSmith Tracing
+
+1. Create a LangSmith account at [smith.langchain.com](https://smith.langchain.com/)
+2. Add the following variables to your `.env` file:
+   ```
+   LANGSMITH_TRACING=true
+   LANGSMITH_ENDPOINT="https://api.smith.langchain.com"
+   LANGSMITH_API_KEY="your_langsmith_api_key"
+   LANGSMITH_PROJECT="your_langsmith_project"
+   ```
+
+3. Monitor your agent runs in the LangSmith UI to:
+   - Debug agent decision-making
+   - Optimize prompts and tools
+   - Analyze token usage and performance
+   - Share traces with your team
+
+### Benefits of LangSmith Tracing
+
+- **Debugging**: Visualize the complete execution flow of each agent, including internal reasoning steps
+- **Prompt Optimization**: Analyze which prompts are most effective for different agent roles
+- **Performance Monitoring**: Track token usage, latency, and other metrics to identify bottlenecks
+- **Quality Assurance**: Evaluate agent outputs and decision quality over time
+- **Collaboration**: Share traces with team members to collaboratively debug and improve the system
+
+The system uses the `@traceable` decorator on key functions to automatically send execution traces to LangSmith when enabled.
 
 ## Contributing
 

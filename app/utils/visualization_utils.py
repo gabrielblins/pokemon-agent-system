@@ -212,16 +212,44 @@ def get_pokemon_sprite(pokemon_name: str, sprite_variant: str = "default", is_fi
             # Pixels with RGB values close to black are made transparent
             data = sprite.getdata()
             new_data = []
-            for item in data:
-                # If the pixel is black or very dark, make it transparent
-                if item[0] < 20 and item[1] < 20 and item[2] < 20:
-                    new_data.append((0, 0, 0, 0))
-                else:
-                    new_data.append(item)
-            sprite.putdata(new_data)
+            
+            # Check if the image already has transparency
+            has_transparency = sprite.mode == 'RGBA' and any(item[3] < 255 for item in data)
+            
+            # Only process if the image doesn't already have transparency
+            if not has_transparency:
+                # Check outer edges for background color (usually black in Pokemon sprites)
+                width, height = sprite.size
+                edge_pixels = []
+                
+                # Sample pixels from the edges of the image
+                for x in range(width):
+                    edge_pixels.append(data[x])  # Top edge
+                    edge_pixels.append(data[(height-1) * width + x])  # Bottom edge
+                
+                for y in range(height):
+                    edge_pixels.append(data[y * width])  # Left edge
+                    edge_pixels.append(data[y * width + width - 1])  # Right edge
+                
+                # Count black and near-black pixels on the edges
+                bg_color_count = sum(1 for p in edge_pixels if p[0] < 10 and p[1] < 10 and p[2] < 10)
+                
+                # If most edge pixels are black, we should remove the black background
+                if bg_color_count > len(edge_pixels) * 0.7:
+                    for item in data:
+                        # More conservative approach: only make pixels transparent if they're very black
+                        # and based on alpha if available
+                        if item[0] < 10 and item[1] < 10 and item[2] < 10:
+                            # Very black pixel - make transparent
+                            new_data.append((0, 0, 0, 0))
+                        else:
+                            # Keep the original pixel
+                            new_data.append(item)
+                    sprite.putdata(new_data)
+                # Otherwise, keep the image as is (it likely has intended black parts)
             
             # Resize to a reasonable size (preserve aspect ratio)
-            sprite.thumbnail((200, 200), Image.LANCZOS)
+            sprite.thumbnail((400, 400), Image.LANCZOS)
             
             # Cache the processed sprite
             save_cached_image(cache_key, sprite)
@@ -365,41 +393,41 @@ def create_battle_frame(
     
     # Add a platform for each Pokémon
     # Platform for Pokémon 1
-    platform1_x = 150
-    platform1_y = 350
-    # draw.ellipse([(platform1_x-70, platform1_y-10), (platform1_x+70, platform1_y+30)], 
-    #              fill=(120, 120, 120), outline=(80, 80, 80))
+    platform1_x = 200  # Moved more to the left
+    platform1_y = 340  # Slightly higher on battlefield
     
     # Platform for Pokémon 2
-    platform2_x = 600
-    platform2_y = 300
-    # draw.ellipse([(platform2_x-70, platform2_y-10), (platform2_x+70, platform2_y+30)], 
-    #              fill=(120, 120, 120), outline=(80, 80, 80))
+    platform2_x = 600  # Keep this position
+    platform2_y = 290  # Slightly higher on battlefield
     
     # Draw Pokémon sprites with shadows
     # Shadow for Pokémon 1
-    shadow1 = Image.new('RGBA', pokemon1_sprite.size, (0, 0, 0, 0))
-    shadow1_draw = ImageDraw.Draw(shadow1)
-    shadow1_width, shadow1_height = pokemon1_sprite.size
-    shadow1_draw.ellipse([(shadow1_width/4, shadow1_height*0.8), 
-                          (shadow1_width*0.75, shadow1_height*0.95)], 
-                         fill=(0, 0, 0, 100))
-    frame.paste(shadow1, (platform1_x-70, platform1_y-120), shadow1)
+    shadow1 = create_pokemon_shadow(pokemon1_sprite)
+    # Position the shadow at the bottom of where the sprite will be
+    shadow1_pos_x = platform1_x - shadow1.width//2
+    shadow1_pos_y = platform1_y - 5  # Place shadow on the ground
+    frame.paste(shadow1, (shadow1_pos_x, shadow1_pos_y), shadow1)
     
     # Shadow for Pokémon 2
-    shadow2 = Image.new('RGBA', pokemon2_sprite.size, (0, 0, 0, 0))
-    shadow2_draw = ImageDraw.Draw(shadow2)
-    shadow2_width, shadow2_height = pokemon2_sprite.size
-    shadow2_draw.ellipse([(shadow2_width/4, shadow2_height*0.8), 
-                          (shadow2_width*0.75, shadow2_height*0.95)], 
-                         fill=(0, 0, 0, 100))
-    frame.paste(shadow2, (platform2_x-70, platform2_y-120), shadow2)
+    shadow2 = create_pokemon_shadow(pokemon2_sprite)
+    # Position the shadow at the bottom of where the sprite will be
+    shadow2_pos_x = platform2_x - shadow2.width//2
+    shadow2_pos_y = platform2_y - 5  # Place shadow on the ground
+    frame.paste(shadow2, (shadow2_pos_x, shadow2_pos_y), shadow2)
     
-    # Pokemon 1 (left side)
-    frame.paste(pokemon1_sprite, (platform1_x-70, platform1_y-120), pokemon1_sprite)
+    # Calculate vertical offset based on sprite height - larger sprites need more offset
+    pokemon1_y_offset = int(pokemon1_sprite.height / 2.5)  # Using regular division then converting to int
+    pokemon2_y_offset = int(pokemon2_sprite.height / 2.5)  # Using regular division then converting to int
     
-    # Pokemon 2 (right side)
-    frame.paste(pokemon2_sprite, (platform2_x-70, platform2_y-120), pokemon2_sprite)
+    # Pokemon 1 (left side) - Ensure it's directly centered over the shadow
+    pokemon1_pos_x = platform1_x - pokemon1_sprite.width//2  # Center on platform
+    pokemon1_pos_y = platform1_y - pokemon1_sprite.height + pokemon1_y_offset
+    frame.paste(pokemon1_sprite, (pokemon1_pos_x, pokemon1_pos_y), pokemon1_sprite)
+    
+    # Pokemon 2 (right side) - Position directly above shadow center
+    pokemon2_pos_x = platform2_x - pokemon2_sprite.width//2  # Center on platform
+    pokemon2_pos_y = platform2_y - pokemon2_sprite.height + pokemon2_y_offset
+    frame.paste(pokemon2_sprite, (pokemon2_pos_x, pokemon2_pos_y), pokemon2_sprite)
     
     # Create nicer name displays with health bars
     # Name display for Pokémon 1
@@ -442,6 +470,49 @@ def create_battle_frame(
     frame.paste(message_box, (10, 400), message_box)
     
     return frame
+
+def create_pokemon_shadow(pokemon_sprite: Image.Image) -> Image.Image:
+    """
+    Create an elliptical shadow for a Pokémon sprite (game-style)
+    
+    Args:
+        pokemon_sprite: The Pokémon sprite image
+        
+    Returns:
+        Shadow image with transparency
+    """
+    # Get dimensions
+    width, height = pokemon_sprite.size
+    
+    # Create a new blank image for the shadow
+    shadow = Image.new('RGBA', (width, int(height * 0.3)), (0, 0, 0, 0))
+    shadow_draw = ImageDraw.Draw(shadow)
+    
+    # Calculate ellipse dimensions - use sprite width to determine shadow size
+    sprite_width = width
+    
+    # Draw an elliptical shadow - make shadow slightly larger for larger sprites
+    shadow_width = int(sprite_width * 0.9)  # Increased from 0.8 to 0.9
+    shadow_height = int(shadow_width * 0.4)  # Shadow height relative to width
+    
+    # Center the ellipse
+    x1 = (width - shadow_width) // 2
+    y1 = (shadow.height - shadow_height) // 2
+    x2 = x1 + shadow_width
+    y2 = y1 + shadow_height
+    
+    # Draw the shadow ellipse
+    shadow_draw.ellipse([(x1, y1), (x2, y2)], fill=(0, 0, 0, 80))
+    
+    # Apply a slight gaussian blur if PIL supports it
+    try:
+        from PIL import ImageFilter
+        shadow = shadow.filter(ImageFilter.GaussianBlur(radius=1.5))
+    except (ImportError, AttributeError):
+        # If blur isn't available, that's okay
+        pass
+    
+    return shadow
 
 def generate_battle_animation(
     pokemon1_data: Dict[str, Any],
