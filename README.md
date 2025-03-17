@@ -160,11 +160,11 @@ You can use any compatible LLM provider by modifying the configuration in `app/g
 
 4. Run the application:
    ```
-   make PORT=8000 run
+   make PORT=8080 run
    ```
    or
    ```
-   uvicorn app.main:app --reload --port 8000
+   uvicorn app.main:app --reload --port 8080
    ```
 
 #### Using Docker
@@ -197,12 +197,12 @@ You can use any compatible LLM provider by modifying the configuration in `app/g
 
 ## Usage
 
-Once the server is running, you can access the API at `http://localhost:8000`.
+Once the server is running, you can access the API at `http://localhost:8080`.
 
 ### API Documentation
 
-- Swagger UI: `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
+- Swagger UI: `http://localhost:8080/docs`
+- ReDoc: `http://localhost:8080/redoc`
 
 ### Example Queries
 
@@ -280,6 +280,7 @@ graph TD
     visualizer(visualizer):::artist
     __end__([__end__]):::last
     
+    %% Agent connections
     __start__ --> supervisor
     expert --> supervisor
     researcher --> supervisor
@@ -289,6 +290,19 @@ graph TD
     supervisor -.-> researcher
     supervisor -.-> expert
     supervisor -.-> __end__
+    
+    %% Tool connections
+    format_response[format_response]:::tool
+    fetch_pokemon_info[fetch_pokemon_info]:::tool
+    analyze_battle[analyze_battle]:::tool
+    explain_stats[explain_stats]:::tool
+    create_battle_visualization[create_battle_visualization]:::tool
+    
+    supervisor --- format_response
+    researcher --- fetch_pokemon_info
+    expert --- analyze_battle
+    expert --- explain_stats
+    visualizer --- create_battle_visualization
     
     %% Pokémon-themed styling
     classDef default color:#ffffff,stroke-width:2
@@ -300,6 +314,9 @@ graph TD
     classDef professor fill:#3dc7ef,stroke:#2e80cc,color:#ffffff %% Water-type/Professor colors
     classDef elite fill:#f366b9,stroke:#9b6470,color:#ffffff %% Psychic-type/Elite colors
     classDef artist fill:#7AC74C,stroke:#4a9421,color:#ffffff %% Grass-type/Artist colors
+    
+    %% Tool styling
+    classDef tool fill:#ffde00,stroke:#3b4cca,color:#000000,shape:hexagon
 ```
 
 ## Battle Visualization
@@ -321,7 +338,7 @@ You can access battle visualizations through:
 
 You can customize the LLM provider in `app/graph/agent_graph.py` by modifying the `create_agent_graph` function. The system supports:
 
-- OpenAI models (default: gpt-4o-mini)
+- OpenAI models (default: o3-mini)
 - Groq models
 
 Set the provider and model in your `.env` file:
@@ -357,7 +374,7 @@ The system supports [LangSmith](https://smith.langchain.com/) tracing for monito
 
 ### Setting up LangSmith Tracing
 
-1. Create a LangSmith account at [smith.langchain.com](https://smith.langchain.com/)
+1. Create a LangSmith account at [LangSmith](https://smith.langchain.com/)
 2. Add the following variables to your `.env` file:
    ```
    LANGSMITH_TRACING=true
