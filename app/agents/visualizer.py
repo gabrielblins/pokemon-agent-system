@@ -275,7 +275,9 @@ Your response MUST follow this exact JSON structure:
   "pokemon2": "Name of second Pokémon (exactly as provided)",
   "winner": "Name of the winning Pokémon (matching Expert's determination)",
   "battle_highlights": "Key moments from the battle and reasoning for the outcome, based on Expert's analysis",
-  "shiny_used": true/false
+  "shiny_used": true/false,
+  "pokemon1_types": ["type1", "type2"],
+  "pokemon2_types": ["type1", "type2"]
 }
 ```
 

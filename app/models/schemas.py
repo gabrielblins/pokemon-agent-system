@@ -51,3 +51,5 @@ class BattleVisualizationResponse(BaseModel):
     winner: str = Field(..., description="Name of the winning Pokémon")
     battle_highlights: Optional[str] = Field(None, description="Brief highlights of key moments in the battle")
     shiny_used: Optional[bool] = Field(False, description="Whether shiny Pokémon sprites were used")
+    pokemon1_types: Optional[List[str]] = Field(None, description="Types of the first Pokémon")
+    pokemon2_types: Optional[List[str]] = Field(None, description="Types of the second Pokémon")

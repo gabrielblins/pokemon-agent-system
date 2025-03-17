@@ -761,36 +761,39 @@
                 try {
                     const highlightsText = data.battle_highlights || '';
                     
-                    // Common Pokemon types to look for
-                    const pokemonTypes = [
-                        'normal', 'fire', 'water', 'grass', 'electric', 'ice', 
-                        'fighting', 'poison', 'ground', 'flying', 'psychic', 
-                        'bug', 'rock', 'ghost', 'dragon', 'dark', 'steel', 'fairy'
-                    ];
+                    // Use the actual types if available in the response
+                    if (data.pokemon1_types && Array.isArray(data.pokemon1_types)) {
+                        data.pokemon1_types.forEach(type => {
+                            pokemon1Types.appendChild(createTypeBadge(type));
+                        });
+                    }
                     
-                    // Look for types in the battle highlights
-                    const typeMatches = [];
-                    pokemonTypes.forEach(type => {
-                        const typeRegex = new RegExp(`${type}\\b`, 'i');
-                        if (typeRegex.test(highlightsText)) {
-                            typeMatches.push(type);
-                        }
-                    });
-                    
-                    // If we found types, distribute them between the two Pokemon
-                    if (typeMatches.length > 0) {
-                        // For simplicity, assign first half to pokemon1 and second half to pokemon2
-                        const midpoint = Math.ceil(typeMatches.length / 2);
+                    if (data.pokemon2_types && Array.isArray(data.pokemon2_types)) {
+                        data.pokemon2_types.forEach(type => {
+                            pokemon2Types.appendChild(createTypeBadge(type));
+                        });
+                    }
+                    // If types aren't provided in the response, fetch them from the PokeAPI
+                    else {
+                        // Fetch types for Pokemon 1
+                        fetch(`https://pokeapi.co/api/v2/pokemon/${pokemon1.toLowerCase()}`)
+                            .then(resp => resp.json())
+                            .then(pokemonData => {
+                                pokemonData.types.forEach(typeInfo => {
+                                    pokemon1Types.appendChild(createTypeBadge(typeInfo.type.name));
+                                });
+                            })
+                            .catch(err => console.error(`Error fetching ${pokemon1} types:`, err));
                         
-                        // Add types to pokemon1
-                        for (let i = 0; i < midpoint && i < typeMatches.length; i++) {
-                            pokemon1Types.appendChild(createTypeBadge(typeMatches[i]));
-                        }
-                        
-                        // Add types to pokemon2
-                        for (let i = midpoint; i < typeMatches.length; i++) {
-                            pokemon2Types.appendChild(createTypeBadge(typeMatches[i]));
-                        }
+                        // Fetch types for Pokemon 2
+                        fetch(`https://pokeapi.co/api/v2/pokemon/${pokemon2.toLowerCase()}`)
+                            .then(resp => resp.json())
+                            .then(pokemonData => {
+                                pokemonData.types.forEach(typeInfo => {
+                                    pokemon2Types.appendChild(createTypeBadge(typeInfo.type.name));
+                                });
+                            })
+                            .catch(err => console.error(`Error fetching ${pokemon2} types:`, err));
                     }
                 } catch (error) {
                     console.error("Error processing Pokemon types:", error);
